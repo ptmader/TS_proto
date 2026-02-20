@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamSnap ONE Invoicing Feature - PRD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            line-height: 1.4;
+            color: #1a1a2e;
+            background: white;
+            padding: 40px;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .header {
+            border-bottom: 3px solid #0057be;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #2c323d;
+        }
+
+        .meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #0057be;
+            margin: 20px 0 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            font-size: 13px;
+            color: #2c323d;
+            margin: 10px 0 5px 0;
+        }
+
+        p, li {
+            font-size: 12px;
+            color: #444;
+        }
+
+        ul {
+            padding-left: 18px;
+            margin-bottom: 10px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        .section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .highlight-box {
+            background: #f4f5f8;
+            border-left: 4px solid #f75d28;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        .highlight-box p {
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .kpi-row {
+            display: flex;
+            gap: 15px;
+            margin: 10px 0;
+        }
+
+        .kpi {
+            flex: 1;
+            background: #0057be;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .kpi-label {
+            font-size: 10px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        .kpi-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .kpi.orange {
+            background: #f75d28;
+        }
+
+        .decision-box {
+            background: #e6f0f9;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        .decision-box p {
+            font-size: 12px;
+            margin: 0;
+            font-style: italic;
+        }
+
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin: 10px 0;
+        }
+
+        .metrics-table th, .metrics-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .metrics-table th {
+            background: #f4f5f8;
+            font-weight: 600;
+        }
+
+        .tag {
+            display: inline-block;
+            background: #e0e0e0;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            margin-right: 5px;
+        }
+
+        .tag.priority-high {
+            background: #fde8e7;
+            color: #c0392b;
+        }
+
+        .open-questions {
+            background: #fff9e6;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #f5a623;
+        }
+
+        .open-questions h3 {
+            color: #f5a623;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+            font-size: 10px;
+            color: #888;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>TeamSnap ONE Invoicing Feature PRD</h1>
+            <p style="font-size: 12px; color: #666;">Product Requirements Document</p>
+        </div>
+        <div class="meta">
+            <p><strong>Author:</strong> Patrick Mader</p>
+            <p><strong>Date:</strong> February 2026</p>
+        </div>
+    </div>
+
+    <h2>Problem Statement</h2>
+    <div class="highlight-box">
+        <p><strong>Core Problem:</strong> TeamSnap ONE migration is mandatory but blocked for organizations that rely on invoicing. This prevents reaching the 70%+ payment attach rate target.</p>
+    </div>
+    <div class="decision-box">
+        <p><strong>Decision:</strong> We must decide how to allocate limited resources between removing a migration blocker (invoicing) and building a long-term growth lever (registration) to increase attach rate and payment volume.</p>
+    </div>
+
+    <h2>Target Metrics</h2>
+    <div class="kpi-row">
+        <div class="kpi">
+            <div class="kpi-label">Payment Attach Rate</div>
+            <div class="kpi-value">50% → 70%+</div>
+        </div>
+        <div class="kpi orange">
+            <div class="kpi-label">Payment Volume</div>
+            <div class="kpi-value">Unblock 20%</div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div>
+            <h2>Solution Overview</h2>
+            <h3>MVP (Phase 1)</h3>
+            <ul>
+                <li>One-off invoice creation</li>
+                <li>Line items & descriptions</li>
+                <li>Email delivery to families</li>
+                <li>Online payment link</li>
+                <li>Basic status tracking (draft/sent/paid)</li>
+            </ul>
+
+            <h3>Phase 2+</h3>
+            <ul>
+                <li>Recurring invoices</li>
+                <li>Installment plans</li>
+                <li>Auto-reminders</li>
+                <li>Late fee automation</li>
+                <li>Enhanced reporting</li>
+            </ul>
+        </div>
+
+        <div>
+            <h2>Why This Solution?</h2>
+            <div class="highlight-box" style="border-color: #1fc164;">
+                <p><strong>Unblocks Migration:</strong> Enables invoicing-dependent organizations to migrate from legacy to TeamSnap ONE</p>
+            </div>
+            <div class="highlight-box" style="border-color: #1fc164;">
+                <p><strong>Captures Volume:</strong> Unlocks the ~20% of payment volume currently stranded on legacy due to invoicing gap</p>
+            </div>
+            <div class="highlight-box" style="border-color: #1fc164;">
+                <p><strong>Enables Future Growth:</strong> Completing migration reduces operational surface area, positioning team to focus on payment attach rate improvement via registration features</p>
+            </div>
+        </div>
+    </div>
+
+    <h2>Success Metrics</h2>
+    <table class="metrics-table">
+        <tr>
+            <th>Metric</th>
+            <th>Target</th>
+            <th>Notes</th>
+        </tr>
+        <tr>
+            <td>Migration Completion %</td>
+            <td>100%</td>
+            <td>Primary goal - unblock all orgs</td>
+        </tr>
+        <tr>
+            <td>Payment Volume on TeamSnap ONE</td>
+            <td>Increase</td>
+            <td>vs. Legacy platform</td>
+        </tr>
+        <tr>
+            <td>Payment Attach Rate</td>
+            <td>Track</td>
+            <td>Expected to increase organically</td>
+        </tr>
+        <tr>
+            <td>Invoice Volume</td>
+            <td>Track</td>
+            <td>Secondary metric</td>
+        </tr>
+    </table>
+
+    <h2>Open Questions & Risks</h2>
+    <div class="open-questions">
+        <h3>Key Assumptions to Validate</h3>
+        <ul>
+            <li><span class="tag priority-high">HIGH</span> Is invoicing truly the primary migration blocker, or are there other factors?</li>
+            <li>What % of organizations currently use third-party tools (PayPal, Venmo) to bridge this gap?</li>
+            <li>What is the actual revenue impact of the 20% stranded volume?</li>
+        </ul>
+
+        <h3>Risks</h3>
+        <ul>
+            <li>Scope creep in MVP could delay migration unblocking</li>
+            <li>Customer feedback may reveal invoicing needs are more complex than MVP covers</li>
+            <li>Phase 2 features may be needed sooner than expected</li>
+        </ul>
+
+        <h3>Questions for Stakeholders</h3>
+        <ul>
+            <li>What is the timeline expectation for migration completion?</li>
+            <li>How much engineering capacity is available for Phase 1 vs Phase 2?</li>
+            <li>Are there compliance/financial regulations to consider for invoicing?</li>
+        </ul>
+    </div>
+
+    <div class="footer">
+        <p>Prepared for TeamSnap Senior PM Interview | Patrick Mader</p>
+    </div>
+</body>
+</html>
