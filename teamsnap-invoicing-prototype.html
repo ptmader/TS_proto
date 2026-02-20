@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TeamSnap ONE - Invoicing Prototype</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --nav-dark: #2c323d;
+            --nav-text: #c0c0c0;
+            --primary-blue: #0057be;
+            --primary-blue-hover: #004a9e;
+            --body-text: #585858;
+            --heading-text: #1a1a2e;
+            --bg-light: #f4f5f8;
+            --white: #ffffff;
+            --border: #e0e3e8;
+            --success-green: #1fc164;
+            --warning-orange: #f5a623;
+            --error-red: #e74c3c;
+            --ts-orange: #f75d28;
+            --row-hover: #f8f9fc;
+        }
+
+        body {
+            font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-light);
+            color: var(--body-text);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* Layout */
+        .app { display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background: var(--nav-dark);
+            color: var(--nav-text);
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            z-index: 100;
+        }
+        .sidebar-logo {
+            padding: 20px 20px 16px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-icon {
+            width: 32px; height: 32px;
+            background: var(--ts-orange);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 800; font-size: 18px;
+        }
+        .logo-text { font-size: 16px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+        .logo-text span { color: var(--nav-text); font-weight: 400; font-size: 12px; display: block; margin-top: -2px; }
+
+        .sidebar-section { padding: 16px 0 8px; }
+        .sidebar-section-label { padding: 0 20px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px; color: #8a8f9a; font-weight: 600; }
+        .sidebar-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 20px;
+            color: var(--nav-text);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 13px;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-item:hover { background: rgba(255,255,255,0.06); color: #fff; }
+        .sidebar-item.active { background: rgba(0,87,190,0.15); color: #fff; border-left-color: var(--primary-blue); font-weight: 600; }
+        .sidebar-item .icon { width: 18px; text-align: center; font-size: 15px; opacity: 0.7; }
+        .sidebar-item.active .icon { opacity: 1; }
+
+        .sidebar-org {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            margin-top: auto;
+        }
+        .sidebar-org-name { color: #fff; font-size: 13px; font-weight: 600; }
+        .sidebar-org-detail { font-size: 11px; color: #8a8f9a; margin-top: 2px; }
+
+        /* Main Content */
+        .main { flex: 1; margin-left: 240px; }
+
+        /* Top Bar */
+        .topbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 0 32px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .topbar-breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #8a8f9a; }
+        .topbar-breadcrumb span { color: var(--heading-text); font-weight: 600; }
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .topbar-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--primary-blue); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700;
+        }
+
+        /* Content Area */
+        .content { padding: 28px 32px; }
+
+        /* Page Header */
+        .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+        .page-title { font-size: 24px; font-weight: 700; color: var(--heading-text); font-family: 'Georgia', serif; }
+        .page-subtitle { font-size: 13px; color: #8a8f9a; margin-top: 4px; }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 9px 18px; border-radius: 6px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            border: none; transition: all 0.15s; font-family: inherit;
+        }
+        .btn-primary { background: var(--primary-blue); color: white; }
+        .btn-primary:hover { background: var(--primary-blue-hover); }
+        .btn-secondary { background: var(--white); color: var(--body-text); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--bg-light); }
+        .btn-success { background: var(--success-green); color: white; }
+        .btn-success:hover { background: #18a855; }
+        .btn-lg { padding: 12px 24px; font-size: 14px; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        /* Metric Cards */
+        .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .metric-card {
+            background: var(--white); border-radius: 8px;
+            padding: 20px; border: 1px solid var(--border);
+        }
+        .metric-label { font-size: 12px; color: #8a8f9a; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; margin-bottom: 8px; }
+        .metric-value { font-size: 28px; font-weight: 700; color: var(--heading-text); }
+        .metric-change { font-size: 12px; margin-top: 6px; display: flex; align-items: center; gap: 4px; }
+        .metric-change.up { color: var(--success-green); }
+        .metric-change.down { color: var(--error-red); }
+        .metric-change.neutral { color: #8a8f9a; }
+
+        /* Tables */
+        .table-card { background: var(--white); border-radius: 8px; border: 1px solid var(--border); overflow: hidden; }
+        .table-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+        .table-title { font-size: 16px; font-weight: 700; color: var(--heading-text); }
+        .table-filters { display: flex; gap: 8px; align-items: center; }
+        .filter-input {
+            padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 13px; color: var(--body-text); background: var(--white); font-family: inherit;
+            min-width: 180px;
+        }
+        .filter-input:focus { outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 2px rgba(0,87,190,0.12); }
+        .filter-select {
+            padding: 7px 28px 7px 12px; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 13px; color: var(--body-text); background: var(--white); font-family: inherit;
+            appearance: none; cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23585858' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 10px center;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            text-align: left; padding: 12px 20px; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 0.5px; color: #8a8f9a;
+            font-weight: 600; background: #fafbfc; border-bottom: 1px solid var(--border);
+        }
+        td { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+        tr:hover td { background: var(--row-hover); }
+        tr:last-child td { border-bottom: none; }
+
+        /* Status Badge */
+        .badge {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;
+        }
+        .badge-dot { width: 6px; height: 6px; border-radius: 50%; }
+        .badge-paid { background: #e8f8ef; color: #15803d; }
+        .badge-paid .badge-dot { background: #15803d; }
+        .badge-pending { background: #fef3cd; color: #92700c; }
+        .badge-pending .badge-dot { background: #f5a623; }
+        .badge-overdue { background: #fde8e8; color: #b91c1c; }
+        .badge-overdue .badge-dot { background: #e74c3c; }
+        .badge-draft { background: #eef1f5; color: #585858; }
+        .badge-draft .badge-dot { background: #8a8f9a; }
+        .badge-sent { background: #e8f0fe; color: #0057be; }
+        .badge-sent .badge-dot { background: #0057be; }
+
+        /* Action Menu */
+        .action-dots { cursor: pointer; color: #8a8f9a; font-size: 18px; letter-spacing: 2px; padding: 4px 8px; border-radius: 4px; }
+        .action-dots:hover { background: var(--bg-light); color: var(--body-text); }
+
+        /* Screen management */
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        /* Create Invoice Form */
+        .form-card { background: var(--white); border-radius: 8px; border: 1px solid var(--border); padding: 28px; margin-bottom: 20px; }
+        .form-card-title { font-size: 16px; font-weight: 700; color: var(--heading-text); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .form-row { display: flex; gap: 20px; margin-bottom: 16px; }
+        .form-group { flex: 1; }
+        .form-label { display: block; font-size: 12px; font-weight: 600; color: var(--heading-text); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.3px; }
+        .form-input, .form-textarea, .form-select-field {
+            width: 100%; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px;
+            font-size: 14px; color: var(--body-text); font-family: inherit; background: var(--white);
+        }
+        .form-input:focus, .form-textarea:focus, .form-select-field:focus { outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 2px rgba(0,87,190,0.12); }
+        .form-textarea { resize: vertical; min-height: 80px; }
+        .form-select-field {
+            appearance: none; cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23585858' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 12px center;
+        }
+        .form-hint { font-size: 12px; color: #8a8f9a; margin-top: 4px; }
+
+        /* Stepper */
+        .stepper { display: flex; align-items: center; gap: 0; margin-bottom: 32px; background: var(--white); border-radius: 8px; border: 1px solid var(--border); padding: 16px 24px; }
+        .step { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .step-number {
+            width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 12px; font-weight: 700; border: 2px solid var(--border); color: #8a8f9a; flex-shrink: 0;
+        }
+        .step.active .step-number { background: var(--primary-blue); color: white; border-color: var(--primary-blue); }
+        .step.completed .step-number { background: var(--success-green); color: white; border-color: var(--success-green); }
+        .step-label { font-size: 13px; color: #8a8f9a; font-weight: 500; }
+        .step.active .step-label { color: var(--heading-text); font-weight: 600; }
+        .step.completed .step-label { color: var(--success-green); }
+        .step-line { flex: 1; height: 2px; background: var(--border); margin: 0 12px; }
+        .step.completed + .step-line, .step-line.done { background: var(--success-green); }
+
+        /* Line Items */
+        .line-items-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        .line-items-table th { text-align: left; padding: 10px 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #8a8f9a; font-weight: 600; background: #fafbfc; border: 1px solid var(--border); }
+        .line-items-table td { padding: 10px 12px; border: 1px solid var(--border); font-size: 13px; }
+        .line-items-table .line-input { width: 100%; padding: 6px 8px; border: 1px solid transparent; border-radius: 4px; font-size: 13px; font-family: inherit; }
+        .line-items-table .line-input:focus { border-color: var(--primary-blue); outline: none; }
+        .line-total { font-weight: 700; color: var(--heading-text); }
+        .add-line { display: inline-flex; align-items: center; gap: 6px; color: var(--primary-blue); font-weight: 600; font-size: 13px; cursor: pointer; margin-top: 12px; padding: 6px 0; }
+        .add-line:hover { text-decoration: underline; }
+        .remove-line { color: var(--error-red); cursor: pointer; font-size: 16px; padding: 4px; border-radius: 4px; }
+        .remove-line:hover { background: #fde8e8; }
+
+        /* Totals */
+        .totals-section { display: flex; justify-content: flex-end; margin-top: 16px; }
+        .totals-box { width: 280px; }
+        .totals-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+        .totals-row.total { border-top: 2px solid var(--heading-text); padding-top: 12px; margin-top: 4px; font-weight: 700; color: var(--heading-text); font-size: 16px; }
+
+        /* Recipients */
+        .recipient-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .recipient-chip {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; background: #e8f0fe; color: var(--primary-blue);
+            border-radius: 16px; font-size: 12px; font-weight: 600;
+        }
+        .recipient-chip .remove { cursor: pointer; font-size: 14px; opacity: 0.7; }
+        .recipient-chip .remove:hover { opacity: 1; }
+
+        /* Preview Invoice */
+        .invoice-preview {
+            background: var(--white); border-radius: 8px; border: 1px solid var(--border);
+            max-width: 680px; margin: 0 auto; padding: 40px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        .invoice-preview-header { display: flex; justify-content: space-between; margin-bottom: 32px; padding-bottom: 24px; border-bottom: 2px solid var(--heading-text); }
+        .invoice-tag { font-size: 32px; font-weight: 700; color: var(--heading-text); font-family: Georgia, serif; }
+        .invoice-meta { text-align: right; }
+        .invoice-meta-row { font-size: 13px; margin-bottom: 4px; }
+        .invoice-meta-label { color: #8a8f9a; }
+        .invoice-meta-value { color: var(--heading-text); font-weight: 600; }
+
+        .invoice-parties { display: flex; justify-content: space-between; margin-bottom: 32px; }
+        .invoice-party-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #8a8f9a; font-weight: 600; margin-bottom: 6px; }
+        .invoice-party-name { font-size: 15px; font-weight: 700; color: var(--heading-text); }
+        .invoice-party-detail { font-size: 13px; color: var(--body-text); margin-top: 2px; }
+
+        .invoice-items-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+        .invoice-items-table th { text-align: left; padding: 10px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: #8a8f9a; font-weight: 600; border-bottom: 1px solid var(--border); }
+        .invoice-items-table th:last-child { text-align: right; }
+        .invoice-items-table td { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .invoice-items-table td:last-child { text-align: right; font-weight: 600; }
+
+        .invoice-total-section { display: flex; justify-content: flex-end; }
+        .invoice-total-box { width: 240px; }
+        .invoice-total-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+        .invoice-total-row.grand { font-size: 18px; font-weight: 700; color: var(--heading-text); border-top: 2px solid var(--heading-text); padding-top: 10px; margin-top: 6px; }
+        .invoice-due-banner {
+            margin-top: 24px; padding: 16px; background: #fef3cd; border-radius: 6px;
+            display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #92700c;
+        }
+
+        /* Footer Actions */
+        .footer-actions {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 0; margin-top: 20px; border-top: 1px solid var(--border);
+        }
+
+        /* Success Modal */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4); z-index: 200;
+            align-items: center; justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--white); border-radius: 12px; padding: 36px;
+            max-width: 420px; width: 90%; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+        .modal-icon { font-size: 48px; margin-bottom: 16px; }
+        .modal-title { font-size: 20px; font-weight: 700; color: var(--heading-text); margin-bottom: 8px; }
+        .modal-text { font-size: 14px; color: var(--body-text); margin-bottom: 24px; line-height: 1.6; }
+
+        /* Prototype Banner */
+        .prototype-banner {
+            background: #1a1a2e; color: white; text-align: center; padding: 10px;
+            font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+        }
+        .prototype-banner a { color: var(--ts-orange); text-decoration: none; }
+
+        /* Quick Actions */
+        .quick-actions { display: flex; gap: 12px; margin-bottom: 24px; }
+        .quick-action-card {
+            flex: 1; background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+            padding: 16px 20px; cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; gap: 14px;
+        }
+        .quick-action-card:hover { border-color: var(--primary-blue); box-shadow: 0 2px 8px rgba(0,87,190,0.1); }
+        .quick-action-icon {
+            width: 40px; height: 40px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+        }
+        .quick-action-icon.blue { background: #e8f0fe; color: var(--primary-blue); }
+        .quick-action-icon.green { background: #e8f8ef; color: var(--success-green); }
+        .quick-action-icon.orange { background: #fff3e0; color: var(--ts-orange); }
+        .quick-action-title { font-size: 14px; font-weight: 600; color: var(--heading-text); }
+        .quick-action-desc { font-size: 12px; color: #8a8f9a; margin-top: 2px; }
+
+        .link-blue { color: var(--primary-blue); text-decoration: none; font-weight: 600; cursor: pointer; }
+        .link-blue:hover { text-decoration: underline; }
+
+        .text-right { text-align: right; }
+        .text-muted { color: #8a8f9a; }
+        .font-mono { font-family: 'Courier New', monospace; }
+        .font-bold { font-weight: 700; color: var(--heading-text); }
+
+        /* Checkbox */
+        .checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; cursor: pointer; }
+        .checkbox-row input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary-blue); cursor: pointer; }
+
+        /* Toggle */
+        .toggle-container { display: flex; align-items: center; gap: 10px; }
+        .toggle { position: relative; width: 44px; height: 24px; background: var(--border); border-radius: 12px; cursor: pointer; transition: background 0.2s; }
+        .toggle.on { background: var(--primary-blue); }
+        .toggle-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .toggle.on .toggle-knob { left: 22px; }
+        .toggle-label { font-size: 13px; }
+
+        /* Tabs */
+        .tab-bar { display: flex; border-bottom: 2px solid var(--border); margin-bottom: 20px; }
+        .tab { padding: 12px 20px; font-size: 14px; font-weight: 600; color: #8a8f9a; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.15s; }
+        .tab:hover { color: var(--body-text); }
+        .tab.active { color: var(--primary-blue); border-bottom-color: var(--primary-blue); }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">*</div>
+            <div class="logo-text">TeamSnap <span>ONE</span></div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Organization</div>
+            <div class="sidebar-item"><span class="icon">&#9633;</span> Dashboard</div>
+            <div class="sidebar-item"><span class="icon">&#9823;</span> Members</div>
+            <div class="sidebar-item"><span class="icon">&#9779;</span> Programs</div>
+            <div class="sidebar-item"><span class="icon">&#9734;</span> Seasons</div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Financials</div>
+            <div class="sidebar-item"><span class="icon">&#9745;</span> Registration</div>
+            <div class="sidebar-item active" onclick="showScreen('dashboard')"><span class="icon">&#9993;</span> Invoicing</div>
+            <div class="sidebar-item"><span class="icon">&#36;</span> Payments</div>
+            <div class="sidebar-item"><span class="icon">&#9776;</span> Reports</div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Communication</div>
+            <div class="sidebar-item"><span class="icon">&#9993;</span> Messages</div>
+            <div class="sidebar-item"><span class="icon">&#9742;</span> Notifications</div>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-label">Settings</div>
+            <div class="sidebar-item"><span class="icon">&#9881;</span> Organization</div>
+            <div class="sidebar-item"><span class="icon">&#9783;</span> Payment Setup</div>
+        </div>
+
+        <div class="sidebar-org">
+            <div class="sidebar-org-name">Riverband Youth Soccer</div>
+            <div class="sidebar-org-detail">Club Admin</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main">
+        <!-- Top Bar -->
+        <div class="topbar">
+            <div class="topbar-breadcrumb">
+                Financials &rsaquo; <span id="breadcrumb-title">Invoicing</span>
+            </div>
+            <div class="topbar-right">
+                <span style="font-size: 13px; color: #8a8f9a;">Riverband Youth Soccer</span>
+                <div class="topbar-avatar">JD</div>
+            </div>
+        </div>
+
+        <!-- ============ SCREEN 1: INVOICE DASHBOARD ============ -->
+        <div class="content screen active" id="screen-dashboard">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">Invoicing</div>
+                    <div class="page-subtitle">Create and manage invoices for your organization's members</div>
+                </div>
+                <button class="btn btn-primary btn-lg" onclick="showScreen('create-1')">+ New Invoice</button>
+            </div>
+
+            <!-- Metrics -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Total Invoiced</div>
+                    <div class="metric-value">$24,850</div>
+                    <div class="metric-change up">&#9650; 12% vs last season</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Collected</div>
+                    <div class="metric-value">$18,200</div>
+                    <div class="metric-change neutral">73% collection rate</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Outstanding</div>
+                    <div class="metric-value">$5,450</div>
+                    <div class="metric-change down">14 invoices pending</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Past Due</div>
+                    <div class="metric-value">$1,200</div>
+                    <div class="metric-change down">4 invoices overdue</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <div class="quick-action-card" onclick="showScreen('create-1')">
+                    <div class="quick-action-icon blue">&#9993;</div>
+                    <div>
+                        <div class="quick-action-title">Send New Invoice</div>
+                        <div class="quick-action-desc">Bill members for fees, equipment, or services</div>
+                    </div>
+                </div>
+                <div class="quick-action-card" onclick="showScreen('create-1')">
+                    <div class="quick-action-icon green">&#8634;</div>
+                    <div>
+                        <div class="quick-action-title">Recurring Invoice</div>
+                        <div class="quick-action-desc">Set up automatic monthly billing</div>
+                    </div>
+                </div>
+                <div class="quick-action-card">
+                    <div class="quick-action-icon orange">&#8681;</div>
+                    <div>
+                        <div class="quick-action-title">Export Report</div>
+                        <div class="quick-action-desc">Download CSV of all invoices</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Nav -->
+            <div class="tab-bar">
+                <div class="tab active">All Invoices</div>
+                <div class="tab">Pending</div>
+                <div class="tab">Overdue</div>
+                <div class="tab">Paid</div>
+                <div class="tab">Drafts</div>
+            </div>
+
+            <!-- Invoice Table -->
+            <div class="table-card">
+                <div class="table-header">
+                    <div class="table-filters">
+                        <input type="text" class="filter-input" placeholder="Search invoices...">
+                        <select class="filter-select">
+                            <option>All Programs</option>
+                            <option>Fall 2025 Soccer</option>
+                            <option>Spring 2026 Soccer</option>
+                        </select>
+                        <select class="filter-select">
+                            <option>All Statuses</option>
+                            <option>Paid</option>
+                            <option>Pending</option>
+                            <option>Overdue</option>
+                            <option>Draft</option>
+                        </select>
+                    </div>
+                    <span class="btn btn-secondary btn-sm">&#8681; Export CSV</span>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Invoice #</th>
+                            <th>Recipient</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Due Date</th>
+                            <th>Sent</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-mono link-blue" onclick="showScreen('detail')">INV-0042</td>
+                            <td class="font-bold">Sarah Martinez</td>
+                            <td>Fall Tournament Fee</td>
+                            <td class="font-bold">$150.00</td>
+                            <td><span class="badge badge-paid"><span class="badge-dot"></span>Paid</span></td>
+                            <td>Jan 15, 2026</td>
+                            <td>Jan 2, 2026</td>
+                            <td><span class="action-dots">&#8230;</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-mono link-blue" onclick="showScreen('detail')">INV-0041</td>
+                            <td class="font-bold">James Wilson</td>
+                            <td>Equipment Fee - Uniform Set</td>
+                            <td class="font-bold">$85.00</td>
+                            <td><span class="badge badge-paid"><span class="badge-dot"></span>Paid</span></td>
+                            <td>Jan 15, 2026</td>
+                            <td>Jan 2, 2026</td>
+                            <td><span class="action-dots">&#8230;</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-mono link-blue" onclick="showScreen('detail')">INV-0040</td>
+                            <td class="font-bold">Emily Chen</td>
+                            <td>Spring Season - Additional Training</td>
+                            <td class="font-bold">$275.00</td>
+                            <td><span class="badge badge-pending"><span class="badge-dot"></span>Pending</span></td>
+                            <td>Feb 1, 2026</td>
+                            <td>Jan 18, 2026</td>
+                            <td><span class="action-dots">&#8230;</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-mono link-blue" onclick="showScreen('detail')">INV-0039</td>
+                            <td class="font-bold">Michael Brown</td>
+                            <td>Late Registration Surcharge</td>
+                            <td class="font-bold">$50.00</td>
+                            <td><span class="badge badge-overdue"><span class="badge-dot"></span>Overdue</span></td>
+                            <td>Dec 15, 2025</td>
+                            <td>Dec 1, 2025</td>
+                            <td><span class="action-dots">&#8230;</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-mono link-blue" onclick="showScreen('detail')">INV-0038</td>
+                            <td class="font-bold">Lisa Thompson</td>
+                            <td>Referee Clinic Fee</td>
+                            <td class="font-bold">$125.00</td>
+                            <td><span class="badge badge-pending"><span class="badge-dot"></span>Pending</span></td>
+                            <td>Feb 10, 2026</td>
+                            <td>Jan 20, 2026</td>
+                            <td><span class="action-dots">&#8230;</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-mono link-blue">INV-0037</td>
+                            <td class="font-bold">David Kim</td>
+                            <td>Spring Season Dues - Installment 1</td>
+                            <td class="font-bold">$200.00</td>
+                            <td><span class="badge badge-sent"><span class="badge-dot"></span>Sent</span></td>
+                            <td>Feb 15, 2026</td>
+                            <td>Jan 22, 2026</td>
+                            <td><span class="action-dots">&#8230;</span></td>
+                        </tr>
+                        <tr>
+                            <td class="font-mono">INV-0036</td>
+                            <td class="font-bold">Rachel Adams</td>
+                            <td>Private Coaching Sessions (4x)</td>
+                            <td class="font-bold">$320.00</td>
+                            <td><span class="badge badge-draft"><span class="badge-dot"></span>Draft</span></td>
+                            <td>--</td>
+                            <td>--</td>
+                            <td><span class="action-dots">&#8230;</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ============ SCREEN 2: CREATE INVOICE - STEP 1 ============ -->
+        <div class="content screen" id="screen-create-1">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">New Invoice</div>
+                    <div class="page-subtitle">Create and send an invoice to one or more members</div>
+                </div>
+                <button class="btn btn-secondary" onclick="showScreen('dashboard')">Cancel</button>
+            </div>
+
+            <!-- Stepper -->
+            <div class="stepper">
+                <div class="step active">
+                    <div class="step-number">1</div>
+                    <div class="step-label">Recipients</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Invoice Details</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Review & Send</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-card-title">Select Recipients</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Program</label>
+                        <select class="form-select-field">
+                            <option>All Programs</option>
+                            <option selected>Fall 2025 Soccer</option>
+                            <option>Spring 2026 Soccer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Team</label>
+                        <select class="form-select-field">
+                            <option>All Teams</option>
+                            <option>U10 Hurricanes</option>
+                            <option selected>U12 Lightning</option>
+                            <option>U14 Thunder</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Search Members</label>
+                    <input type="text" class="form-input" placeholder="Type a member name to add...">
+                </div>
+
+                <div class="recipient-list">
+                    <div class="recipient-chip">Emily Chen <span class="remove">x</span></div>
+                    <div class="recipient-chip">Michael Brown <span class="remove">x</span></div>
+                    <div class="recipient-chip">Lisa Thompson <span class="remove">x</span></div>
+                    <div class="recipient-chip">David Kim <span class="remove">x</span></div>
+                </div>
+                <div style="margin-top: 12px;">
+                    <label class="checkbox-row"><input type="checkbox"> Select all members in U12 Lightning (12 members)</label>
+                </div>
+            </div>
+
+            <div class="footer-actions">
+                <button class="btn btn-secondary" onclick="showScreen('dashboard')">Back</button>
+                <button class="btn btn-primary btn-lg" onclick="showScreen('create-2')">Save & Continue</button>
+            </div>
+        </div>
+
+        <!-- ============ SCREEN 3: CREATE INVOICE - STEP 2 ============ -->
+        <div class="content screen" id="screen-create-2">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">New Invoice</div>
+                    <div class="page-subtitle">Create and send an invoice to one or more members</div>
+                </div>
+                <button class="btn btn-secondary" onclick="showScreen('dashboard')">Cancel</button>
+            </div>
+
+            <!-- Stepper -->
+            <div class="stepper">
+                <div class="step completed">
+                    <div class="step-number">&#10003;</div>
+                    <div class="step-label">Recipients</div>
+                </div>
+                <div class="step-line done"></div>
+                <div class="step active">
+                    <div class="step-number">2</div>
+                    <div class="step-label">Invoice Details</div>
+                </div>
+                <div class="step-line"></div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Review & Send</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-card-title">Invoice Information</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Invoice Title</label>
+                        <input type="text" class="form-input" value="Spring Season - Additional Training Fee">
+                    </div>
+                    <div class="form-group" style="max-width: 200px;">
+                        <label class="form-label">Due Date</label>
+                        <input type="date" class="form-input" value="2026-03-01">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Description / Notes</label>
+                    <textarea class="form-textarea" placeholder="Add a note that will appear on the invoice...">Additional training sessions for Spring 2026 season. Covers 8 weeks of supplemental skills training (Tuesdays & Thursdays).</textarea>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-card-title">Line Items</div>
+                <table class="line-items-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 45%;">Description</th>
+                            <th style="width: 15%;">Qty</th>
+                            <th style="width: 20%;">Unit Price</th>
+                            <th style="width: 15%;">Total</th>
+                            <th style="width: 5%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input class="line-input" value="Supplemental Training (8 weeks)"></td>
+                            <td><input class="line-input" value="1" style="width: 60px;"></td>
+                            <td><input class="line-input" value="$200.00"></td>
+                            <td class="line-total">$200.00</td>
+                            <td><span class="remove-line">&#10005;</span></td>
+                        </tr>
+                        <tr>
+                            <td><input class="line-input" value="Training Kit (shirt, shorts, ball)"></td>
+                            <td><input class="line-input" value="1" style="width: 60px;"></td>
+                            <td><input class="line-input" value="$55.00"></td>
+                            <td class="line-total">$55.00</td>
+                            <td><span class="remove-line">&#10005;</span></td>
+                        </tr>
+                        <tr>
+                            <td><input class="line-input" value="Facility fee"></td>
+                            <td><input class="line-input" value="1" style="width: 60px;"></td>
+                            <td><input class="line-input" value="$20.00"></td>
+                            <td class="line-total">$20.00</td>
+                            <td><span class="remove-line">&#10005;</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="add-line" onclick="">+ Add Line Item</div>
+
+                <div class="totals-section">
+                    <div class="totals-box">
+                        <div class="totals-row"><span>Subtotal</span><span>$275.00</span></div>
+                        <div class="totals-row"><span class="text-muted">Discount</span><span class="text-muted">-$0.00</span></div>
+                        <div class="totals-row total"><span>Total</span><span>$275.00</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="form-card-title">Payment Options</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Payment Methods</label>
+                        <div style="margin-top: 8px;">
+                            <label class="checkbox-row"><input type="checkbox" checked> Credit / Debit Card</label>
+                            <label class="checkbox-row"><input type="checkbox" checked> ACH Bank Transfer</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Installment Plan</label>
+                        <select class="form-select-field">
+                            <option>Full payment required</option>
+                            <option>2 installments</option>
+                            <option>3 installments</option>
+                            <option selected>Custom schedule</option>
+                        </select>
+                        <div class="form-hint">Allow families to pay in installments</div>
+                    </div>
+                </div>
+                <div class="form-row" style="margin-top: 8px;">
+                    <div class="form-group">
+                        <div class="toggle-container">
+                            <div class="toggle on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+                            <span class="toggle-label">Send automatic payment reminders</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="toggle-container">
+                            <div class="toggle" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div>
+                            <span class="toggle-label">Apply late fee after due date ($25.00)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-actions">
+                <button class="btn btn-secondary" onclick="showScreen('create-1')">Back</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary">Save as Draft</button>
+                    <button class="btn btn-primary btn-lg" onclick="showScreen('create-3')">Confirm & Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SCREEN 4: CREATE INVOICE - STEP 3 (REVIEW) ============ -->
+        <div class="content screen" id="screen-create-3">
+            <div class="page-header">
+                <div>
+                    <div class="page-title">New Invoice</div>
+                    <div class="page-subtitle">Review your invoice before sending</div>
+                </div>
+                <button class="btn btn-secondary" onclick="showScreen('dashboard')">Cancel</button>
+            </div>
+
+            <!-- Stepper -->
+            <div class="stepper">
+                <div class="step completed">
+                    <div class="step-number">&#10003;</div>
+                    <div class="step-label">Recipients</div>
+                </div>
+                <div class="step-line done"></div>
+                <div class="step completed">
+                    <div class="step-number">&#10003;</div>
+                    <div class="step-label">Invoice Details</div>
+                </div>
+                <div class="step-line done"></div>
+                <div class="step active">
+                    <div class="step-number">3</div>
+                    <div class="step-label">Review & Send</div>
+                </div>
+            </div>
+
+            <div style="background: #e8f0fe; border-radius: 8px; padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--primary-blue); font-weight: 500;">
+                &#9432; This invoice will be sent to <strong style="margin: 0 4px;">4 recipients</strong>. Each will receive an individual copy with a unique invoice number.
+            </div>
+
+            <!-- Preview -->
+            <div class="invoice-preview">
+                <div class="invoice-preview-header">
+                    <div>
+                        <div class="invoice-tag">INVOICE</div>
+                        <div style="font-size: 13px; color: #8a8f9a; margin-top: 4px;">Riverband Youth Soccer Club</div>
+                    </div>
+                    <div class="invoice-meta">
+                        <div class="invoice-meta-row"><span class="invoice-meta-label">Invoice # </span><span class="invoice-meta-value">INV-0043</span></div>
+                        <div class="invoice-meta-row"><span class="invoice-meta-label">Date: </span><span class="invoice-meta-value">Jan 28, 2026</span></div>
+                        <div class="invoice-meta-row"><span class="invoice-meta-label">Due: </span><span class="invoice-meta-value">Mar 1, 2026</span></div>
+                    </div>
+                </div>
+
+                <div class="invoice-parties">
+                    <div>
+                        <div class="invoice-party-label">Bill To</div>
+                        <div class="invoice-party-name">Emily Chen</div>
+                        <div class="invoice-party-detail">U12 Lightning - Fall 2025 Soccer</div>
+                        <div class="invoice-party-detail">emily.chen@email.com</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="invoice-party-label">From</div>
+                        <div class="invoice-party-name">Riverband Youth Soccer</div>
+                        <div class="invoice-party-detail">treasurer@riverbandsc.org</div>
+                    </div>
+                </div>
+
+                <table class="invoice-items-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Supplemental Training (8 weeks)</td>
+                            <td>1</td>
+                            <td>$200.00</td>
+                            <td>$200.00</td>
+                        </tr>
+                        <tr>
+                            <td>Training Kit (shirt, shorts, ball)</td>
+                            <td>1</td>
+                            <td>$55.00</td>
+                            <td>$55.00</td>
+                        </tr>
+                        <tr>
+                            <td>Facility fee</td>
+                            <td>1</td>
+                            <td>$20.00</td>
+                            <td>$20.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="invoice-total-section">
+                    <div class="invoice-total-box">
+                        <div class="invoice-total-row"><span>Subtotal</span><span>$275.00</span></div>
+                        <div class="invoice-total-row grand"><span>Total Due</span><span>$275.00</span></div>
+                    </div>
+                </div>
+
+                <div class="invoice-due-banner">
+                    &#9200; Payment due by March 1, 2026 &nbsp;|&nbsp; Installment plan available &nbsp;|&nbsp; Auto-reminders enabled
+                </div>
+            </div>
+
+            <div class="footer-actions">
+                <button class="btn btn-secondary" onclick="showScreen('create-2')">Back to Edit</button>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary">Save as Draft</button>
+                    <button class="btn btn-success btn-lg" onclick="showSuccessModal()">Send 4 Invoices</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============ SCREEN 5: INVOICE DETAIL ============ -->
+        <div class="content screen" id="screen-detail">
+            <div class="page-header">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="page-title">INV-0042</div>
+                        <span class="badge badge-paid"><span class="badge-dot"></span>Paid</span>
+                    </div>
+                    <div class="page-subtitle">Fall Tournament Fee - Sarah Martinez</div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-secondary btn-sm">&#8681; Download PDF</button>
+                    <button class="btn btn-secondary btn-sm">Resend</button>
+                    <button class="btn btn-secondary btn-sm" onclick="showScreen('dashboard')">Back to List</button>
+                </div>
+            </div>
+
+            <div class="invoice-preview">
+                <div class="invoice-preview-header">
+                    <div>
+                        <div class="invoice-tag">INVOICE</div>
+                        <div style="font-size: 13px; color: #8a8f9a; margin-top: 4px;">Riverband Youth Soccer Club</div>
+                    </div>
+                    <div class="invoice-meta">
+                        <div class="invoice-meta-row"><span class="invoice-meta-label">Invoice # </span><span class="invoice-meta-value">INV-0042</span></div>
+                        <div class="invoice-meta-row"><span class="invoice-meta-label">Date: </span><span class="invoice-meta-value">Jan 2, 2026</span></div>
+                        <div class="invoice-meta-row"><span class="invoice-meta-label">Due: </span><span class="invoice-meta-value">Jan 15, 2026</span></div>
+                        <div class="invoice-meta-row"><span class="invoice-meta-label">Paid: </span><span class="invoice-meta-value" style="color: var(--success-green);">Jan 10, 2026</span></div>
+                    </div>
+                </div>
+
+                <div class="invoice-parties">
+                    <div>
+                        <div class="invoice-party-label">Bill To</div>
+                        <div class="invoice-party-name">Sarah Martinez</div>
+                        <div class="invoice-party-detail">U10 Hurricanes - Fall 2025 Soccer</div>
+                        <div class="invoice-party-detail">s.martinez@email.com</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="invoice-party-label">From</div>
+                        <div class="invoice-party-name">Riverband Youth Soccer</div>
+                        <div class="invoice-party-detail">treasurer@riverbandsc.org</div>
+                    </div>
+                </div>
+
+                <table class="invoice-items-table">
+                    <thead>
+                        <tr><th>Description</th><th>Qty</th><th>Unit Price</th><th>Amount</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Fall Tournament Entry Fee</td>
+                            <td>1</td>
+                            <td>$125.00</td>
+                            <td>$125.00</td>
+                        </tr>
+                        <tr>
+                            <td>Tournament T-Shirt</td>
+                            <td>1</td>
+                            <td>$25.00</td>
+                            <td>$25.00</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="invoice-total-section">
+                    <div class="invoice-total-box">
+                        <div class="invoice-total-row"><span>Subtotal</span><span>$150.00</span></div>
+                        <div class="invoice-total-row grand"><span>Total Paid</span><span style="color: var(--success-green);">$150.00</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="form-card" style="max-width: 680px; margin: 24px auto 0;">
+                <div class="form-card-title">Activity</div>
+                <div style="font-size: 13px; line-height: 2;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><strong style="color: var(--success-green);">&#10003; Payment received</strong> - Visa ending 4242</span>
+                        <span class="text-muted">Jan 10, 2026 3:42 PM</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>&#9993; Payment reminder sent to s.martinez@email.com</span>
+                        <span class="text-muted">Jan 8, 2026 9:00 AM</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>&#9993; Invoice emailed to s.martinez@email.com</span>
+                        <span class="text-muted">Jan 2, 2026 10:15 AM</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Invoice INV-0042 created by Jamie Davis</span>
+                        <span class="text-muted">Jan 2, 2026 10:14 AM</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal-overlay" id="successModal">
+    <div class="modal">
+        <div class="modal-icon">&#10003;</div>
+        <div class="modal-title">Invoices Sent Successfully!</div>
+        <div class="modal-text">
+            4 invoices for <strong>$275.00 each</strong> have been sent.<br>
+            Total invoiced: <strong>$1,100.00</strong><br><br>
+            Recipients will receive an email with a link to view and pay their invoice online.
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="closeModalAndReturn()" style="width: 100%;">Return to Invoicing</button>
+    </div>
+</div>
+
+<!-- Prototype Banner -->
+<div class="prototype-banner">
+    INTERACTIVE PROTOTYPE &nbsp;|&nbsp; TeamSnap ONE Invoicing Feature &nbsp;|&nbsp; Click through to explore the flow
+</div>
+
+<script>
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById('screen-' + screenId).classList.add('active');
+        window.scrollTo(0, 0);
+
+        const titles = {
+            'dashboard': 'Invoicing',
+            'create-1': 'New Invoice',
+            'create-2': 'New Invoice',
+            'create-3': 'New Invoice',
+            'detail': 'Invoice Detail'
+        };
+        document.getElementById('breadcrumb-title').textContent = titles[screenId] || 'Invoicing';
+    }
+
+    function showSuccessModal() {
+        document.getElementById('successModal').classList.add('active');
+    }
+
+    function closeModalAndReturn() {
+        document.getElementById('successModal').classList.remove('active');
+        showScreen('dashboard');
+    }
+
+    // Close modal on overlay click
+    document.getElementById('successModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModalAndReturn();
+    });
+</script>
+
+</body>
+</html>
